@@ -17,7 +17,7 @@ Web API RESTful desenvolvida em .NET para gerenciamento de drones, áreas de ris
 - Cadastro, atualização, remoção e consulta de **Áreas de Risco**
 - Cadastro, atualização, remoção e consulta de **Alertas**
 - Integração com Azure SQL Database
-- Pronto para deploy no Azure App Service
+- Deploy no Azure App Service
 
 ---
 
