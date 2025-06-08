@@ -1,64 +1,103 @@
-﻿using HelperDrone.Contracts.Repositories;
-using HelperDrone.Models;
+﻿using WebApiHelperDrone.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using WebApiHelperDrone.Context;
 
-namespace HelperDrone.Controllers
+namespace WebApiHelperDrone.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AreasRiscoController : Controller
+    public class AreasRiscoController : ControllerBase
     {
-        private readonly IAreaRiscoRepository _areaRiscoRepository;
+        private readonly ApplicationDbContext _context;
 
-        public AreasRiscoController(IAreaRiscoRepository areaRiscoRepository)
+        public AreasRiscoController(ApplicationDbContext context)
         {
-            _areaRiscoRepository = areaRiscoRepository;
+            _context = context;
         }
 
         [HttpGet]
-        public ActionResult<List<AreaRisco>> ObterTodas()
+        public async Task<ActionResult<IEnumerable<AreaRisco>>> GetAreasRisco()
         {
-            var areas = _areaRiscoRepository.ObterTodasAreasRisco();
-            return Ok(areas);
+            return await _context.AreasRisco.ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public ActionResult<AreaRisco> ObterPorId(int id)
+        public async Task<ActionResult<AreaRisco>> GetAreaRisco(int id)
         {
-            var area = _areaRiscoRepository.ObterAreaRiscoPorId(id);
-            if (area == null)
-                return NotFound(new { Mensagem = "Área de risco não encontrada." });
-            return Ok(area);
+            var areaRisco = await _context.AreasRisco.FindAsync(id);
+
+            if (areaRisco == null)
+            {
+                return NotFound();
+            }
+
+            return areaRisco;
         }
 
         [HttpPost]
-        public ActionResult AdicionarAreaRisco([FromBody] AreaRisco areaRisco)
+        public async Task<ActionResult<AreaRisco>> PostAreaRisco(AreaRisco areaRisco)
         {
-            _areaRiscoRepository.AdicionarAreaRisco(areaRisco);
-            return CreatedAtAction(nameof(ObterPorId), new { id = areaRisco.IdArea }, areaRisco);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.AreasRisco.Add(areaRisco);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetAreaRisco), new { id = areaRisco.IdArea }, areaRisco);
         }
 
+        // PUT: api/AreasRisco/5
         [HttpPut("{id}")]
-        public ActionResult AtualizarAreaRisco(int id, [FromBody] AreaRisco areaRisco)
+        public async Task<IActionResult> PutAreaRisco(int id, AreaRisco areaRisco)
         {
-            var existente = _areaRiscoRepository.ObterAreaRiscoPorId(id);
-            if (existente == null)
-                return NotFound(new { Mensagem = "Área de risco não encontrada para atualização." });
+            if (id != areaRisco.IdArea)
+            {
+                return BadRequest("ID da área de risco não coincide com o objeto enviado");
+            }
 
-            areaRisco.IdArea = id;
-            _areaRiscoRepository.AtualizarAreaRisco(areaRisco);
+            _context.Entry(areaRisco).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AreaRiscoExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
             return NoContent();
         }
 
+        // DELETE: api/AreasRisco/5
         [HttpDelete("{id}")]
-        public ActionResult RemoverAreaRisco(int id)
+        public async Task<IActionResult> DeleteAreaRisco(int id)
         {
-            var existente = _areaRiscoRepository.ObterAreaRiscoPorId(id);
-            if (existente == null)
-                return NotFound(new { Mensagem = "Área de risco não encontrada para remoção." });
+            var areaRisco = await _context.AreasRisco.FindAsync(id);
+            if (areaRisco == null)
+            {
+                return NotFound();
+            }
 
-            _areaRiscoRepository.RemoverAreaRisco(id);
+            _context.AreasRisco.Remove(areaRisco);
+            await _context.SaveChangesAsync();
+
             return NoContent();
+        }
+
+        private bool AreaRiscoExists(int id)
+        {
+            return _context.AreasRisco.Any(e => e.IdArea == id);
         }
     }
 }

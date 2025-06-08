@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HelperDrone.Models;
+namespace WebApiHelperDrone.Models;
 
 [Table("AreaRisco")]
 public class AreaRisco
@@ -36,5 +36,6 @@ public class AreaRisco
     public decimal? RaioCobertura { get; set; }
 
     [Column("data_cadastro")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)] // Correção aplicada aqui
     public DateTime DataCadastro { get; set; }
 }

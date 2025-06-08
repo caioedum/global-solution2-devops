@@ -1,96 +1,103 @@
-﻿using HelperDrone.Contracts.Repositories;
-using HelperDrone.Models;
+﻿using WebApiHelperDrone.Models;
 using Microsoft.AspNetCore.Mvc;
-using RabbitMQ.Client;
-using System.Text;
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using WebApiHelperDrone.Context;
 
-namespace HelperDrone.Controllers
+namespace WebApiHelperDrone.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class AlertasController : ControllerBase
     {
-        private readonly IAlertaRepository _alertaRepository;
-        private readonly IConnection _rabbitConnection;
+        private readonly ApplicationDbContext _context;
 
-        public AlertasController(IAlertaRepository alertaRepository, IConnection rabbitConnection)
+        public AlertasController(ApplicationDbContext context)
         {
-            _alertaRepository = alertaRepository;
-            _rabbitConnection = rabbitConnection;
+            _context = context;
         }
 
         [HttpGet]
-        public ActionResult<List<Alerta>> ObterTodos()
+        public async Task<ActionResult<IEnumerable<Alerta>>> GetAlertas()
         {
-            var alertas = _alertaRepository.ObterTodosAlertas();
-            return Ok(alertas);
+            return await _context.Alerta.ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Alerta> ObterPorId(int id)
+        public async Task<ActionResult<Alerta>> GetAlerta(int id)
         {
-            var alerta = _alertaRepository.ObterAlertaPorId(id);
+            var alerta = await _context.Alerta.FindAsync(id);
+
             if (alerta == null)
-                return NotFound(new { Mensagem = "Alerta não encontrado." });
-            return Ok(alerta);
+            {
+                return NotFound();
+            }
+
+            return alerta;
         }
 
         [HttpPost]
-        public ActionResult AdicionarAlerta([FromBody] Alerta alerta)
+        public async Task<ActionResult<Alerta>> PostAlerta(Alerta alerta)
         {
-            _alertaRepository.AdicionarAlerta(alerta);
-            return CreatedAtAction(nameof(ObterPorId), new { id = alerta.IdAlerta }, alerta);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.Alerta.Add(alerta);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetAlerta), new { id = alerta.IdAlerta }, alerta);
         }
 
         [HttpPut("{id}")]
-        public ActionResult AtualizarAlerta(int id, [FromBody] Alerta alerta)
+        public async Task<IActionResult> PutAlerta(int id, Alerta alerta)
         {
-            var existente = _alertaRepository.ObterAlertaPorId(id);
-            if (existente == null)
-                return NotFound(new { Mensagem = "Alerta não encontrado para atualização." });
+            if (id != alerta.IdAlerta)
+            {
+                return BadRequest("ID do alerta não coincide com o objeto enviado");
+            }
 
-            alerta.IdAlerta = id;
-            _alertaRepository.AtualizarAlerta(alerta);
+            _context.Entry(alerta).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AlertaExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public ActionResult RemoverAlerta(int id)
+        public async Task<IActionResult> DeleteAlerta(int id)
         {
-            var existente = _alertaRepository.ObterAlertaPorId(id);
-            if (existente == null)
-                return NotFound(new { Mensagem = "Alerta não encontrado para remoção." });
+            var alerta = await _context.Alerta.FindAsync(id);
+            if (alerta == null)
+            {
+                return NotFound();
+            }
 
-            _alertaRepository.RemoverAlerta(id);
+            _context.Alerta.Remove(alerta);
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
-        [HttpGet("por-area/{areaId}")]
-        public ActionResult<List<Alerta>> ObterPorArea(int areaId)
+        private bool AlertaExists(int id)
         {
-            var alertas = _alertaRepository.ObterAlertasPorAreaRisco(areaId);
-            if (alertas == null || alertas.Count == 0)
-                return NotFound(new { Mensagem = "Nenhum alerta encontrado para esta área de risco." });
-            return Ok(alertas);
-        }
-
-        [HttpGet("por-drone/{droneId}")]
-        public ActionResult<List<Alerta>> ObterPorDrone(int droneId)
-        {
-            var alertas = _alertaRepository.ObterAlertasPorDrone(droneId);
-            if (alertas == null || alertas.Count == 0)
-                return NotFound(new { Mensagem = "Nenhum alerta encontrado para este drone." });
-            return Ok(alertas);
-        }
-
-        [HttpGet("por-usuario/{usuarioId}")]
-        public ActionResult<List<Alerta>> ObterPorUsuario(int usuarioId)
-        {
-            var alertas = _alertaRepository.ObterAlertasPorUsuario(usuarioId);
-            if (alertas == null || alertas.Count == 0)
-                return NotFound(new { Mensagem = "Nenhum alerta encontrado para este usuário." });
-            return Ok(alertas);
+            return _context.Alerta.Any(e => e.IdAlerta == id);
         }
     }
 }

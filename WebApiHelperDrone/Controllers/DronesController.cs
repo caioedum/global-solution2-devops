@@ -1,87 +1,104 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using HelperDrone.Contracts.Repositories;
-using HelperDrone.Models;
+﻿using WebApiHelperDrone.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using WebApiHelperDrone.Context;
 
-namespace HelperDrone.Controllers
+namespace WebApiHelperDrone.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class DronesController : ControllerBase
     {
-        private readonly IDroneRepository _droneRepository;
+        private readonly ApplicationDbContext _context;
 
-        public DronesController(IDroneRepository droneRepository)
+        public DronesController(ApplicationDbContext context)
         {
-            _droneRepository = droneRepository;
+            _context = context;
         }
 
+
         [HttpGet]
-        public ActionResult<List<Drone>> ObterTodos()
+        public async Task<ActionResult<IEnumerable<Drone>>> GetDrone()
         {
-            var drones = _droneRepository.ObterTodos();
-            return Ok(drones);
+            return await _context.Drones.ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Drone> ObterPorId(int id)
+        public async Task<ActionResult<Drone>> GetDrone(int id)
         {
-            var drone = _droneRepository.ObterPorId(id);
+            var drone = await _context.Drones.FindAsync(id);
+
             if (drone == null)
+            {
                 return NotFound();
-            return Ok(drone);
+            }
+
+            return drone;
         }
 
         [HttpPost]
-        public ActionResult AdicionarDrone([FromBody] Drone drone)
+        public async Task<ActionResult<Drone>> PostDrone(Drone drone)
         {
-            _droneRepository.AdicionarDrone(drone);
-            return CreatedAtAction(nameof(ObterPorId), new { id = drone.IdDrone }, drone);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.Drones.Add(drone);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetDrone), new { id = drone.IdDrone }, drone);
         }
 
         [HttpPut("{id}")]
-        public ActionResult AtualizarDrone(int id, [FromBody] Drone drone)
+        public async Task<IActionResult> PutDrone(int id, Drone drone)
         {
-            var existente = _droneRepository.ObterPorId(id);
-            if (existente == null)
-                return NotFound();
+            if (id != drone.IdDrone)
+            {
+                return BadRequest("ID do drone não coincide com o objeto enviado");
+            }
 
-            drone.IdDrone = id;
-            _droneRepository.AtualizarDrone(drone);
+            _context.Entry(drone).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!DroneExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public ActionResult RemoverDrone(int id)
+        public async Task<IActionResult> DeleteDrone(int id)
         {
-            var existente = _droneRepository.ObterPorId(id);
-            if (existente == null)
+            var drone = await _context.Drones.FindAsync(id);
+            if (drone == null)
+            {
                 return NotFound();
+            }
 
-            _droneRepository.RemoverDrone(id);
+            _context.Drones.Remove(drone);
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
-        [HttpGet("disponiveis")]
-        public ActionResult<object> ObterDronesDisponiveis()
+        private bool DroneExists(int id)
         {
-            var drones = _droneRepository.ObterDronesDisponiveis();
-            if (drones.Count == 0)
-            {
-                return NotFound("Nenhum drone disponível encontrado.");
-            }
-            return Ok(new { Drones = drones });
+            return _context.Drones.Any(e => e.IdDrone == id);
         }
-
-        [HttpGet("em-missao")]
-        public ActionResult<object> ObterDronesEmMissao()
-        {
-            var drones = _droneRepository.ObterDronesEmMissao();
-            if (drones.Count == 0)
-            {
-                return NotFound("Nenhum drone em missão encontrado.");
-            }
-            return Ok(new { Drones = drones });
-        }
-
     }
 }

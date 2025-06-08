@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HelperDrone.Models;
+namespace WebApiHelperDrone.Models;
 
 [Table("Usuario")]
 public class Usuario
@@ -36,6 +36,7 @@ public class Usuario
     public string? Status { get; set; }
 
     [Column("data_criacao")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime DataCriacao { get; set; }
 
     [Column("data_atualizacao")]

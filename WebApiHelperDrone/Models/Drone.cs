@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HelperDrone.Models;
+namespace WebApiHelperDrone.Models;
 
 [Table("Drone")]
 public class Drone
@@ -32,7 +32,7 @@ public class Drone
     public decimal? Longitude { get; set; }
 
     [Column("bateria")]
-    public decimal? Bateria { get; set; }
+    public int? Bateria { get; set; } // Correção aplicada aqui
 
     [Column("capacidade_carga")]
     public decimal? CapacidadeCarga { get; set; }
@@ -45,5 +45,6 @@ public class Drone
     public string? HorarioOperacao { get; set; }
 
     [Column("data_cadastro")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime DataCadastro { get; set; }
 }

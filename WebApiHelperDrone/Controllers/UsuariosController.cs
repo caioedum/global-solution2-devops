@@ -1,54 +1,103 @@
-﻿using HelperDrone.Contracts.Repositories;
-using HelperDrone.Models;
-using HelperDrone.Repositories;
+﻿using WebApiHelperDrone.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using WebApiHelperDrone.Context;
 
 namespace HelperDrone.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class UsuariosController : ControllerBase
     {
-        private readonly IUsuarioRepository _usuarioRepository;
+        private readonly ApplicationDbContext _context;
 
-        public UsuariosController(IUsuarioRepository usuarioRepository)
+        public UsuariosController(ApplicationDbContext context)
         {
-            _usuarioRepository = usuarioRepository;
+            _context = context;
         }
 
         [HttpGet]
-        public ActionResult<List<Usuario>> ObterTodos()
+        public async Task<ActionResult<IEnumerable<Usuario>>> GetUsuarios()
         {
-            var usuarios = _usuarioRepository.ObterTodos();
-            return Ok(usuarios);
+            return await _context.Usuarios.ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Usuario> ObterPorId(int id)
+        public async Task<ActionResult<Usuario>> GetUsuario(int id)
         {
-            var usuario = _usuarioRepository.ObterPorId(id);
+            var usuario = await _context.Usuarios.FindAsync(id);
+
             if (usuario == null)
+            {
                 return NotFound();
-            return Ok(usuario);
+            }
+
+            return usuario;
         }
 
         [HttpPost]
-        public ActionResult AdicionarUsuario([FromBody] Usuario usuario)
+        public async Task<ActionResult<Usuario>> PostUsuario(Usuario usuario)
         {
-            _usuarioRepository.AdicionarUsuario(usuario);
-            return CreatedAtAction(nameof(ObterPorId), new { id = usuario.IdUsuario }, usuario);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.Usuarios.Add(usuario);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetUsuario), new { id = usuario.IdUsuario }, usuario);
         }
 
         [HttpPut("{id}")]
-        public ActionResult AtualizarUsuario(int id, [FromBody] Usuario usuario)
+        public async Task<IActionResult> PutUsuario(int id, Usuario usuario)
         {
-            var usuarioExistente = _usuarioRepository.ObterPorId(id);
-            if (usuarioExistente == null)
-                return NotFound();
+            if (id != usuario.IdUsuario)
+            {
+                return BadRequest("ID do usuário não coincide com o objeto enviado");
+            }
 
-            usuario.IdUsuario = id;
-            _usuarioRepository.AtualizarUsuario(usuario);
+            _context.Entry(usuario).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UsuarioExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
             return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUsuario(int id)
+        {
+            var usuario = await _context.Usuarios.FindAsync(id);
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+
+            _context.Usuarios.Remove(usuario);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool UsuarioExists(int id)
+        {
+            return _context.Usuarios.Any(e => e.IdUsuario == id);
         }
     }
 }

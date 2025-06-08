@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HelperDrone.Models;
+namespace WebApiHelperDrone.Models;
 
 [Table("Alerta")]
 public class Alerta
