@@ -13,15 +13,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add DbContext string connection
+builder.Services.AddSwaggerGen(c =>
+{
+    c.EnableAnnotations();
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Configura o Swagger para exibir na URL raiz
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Web Api iHelperDrone V1");
+    c.RoutePrefix = string.Empty; // Exibe Swagger na URL raiz
+});
 
 app.UseHttpsRedirection();
 
