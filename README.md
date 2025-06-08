@@ -4,6 +4,12 @@ Web API RESTful desenvolvida em .NET para gerenciamento de drones, áreas de ris
 
 ---
 
+## Integrantes do Grupo
+
+- **Caio Eduardo Nascimento Martins - RM554025**
+- **Julia Mariano Barsotti Ferreira - RM552713**
+- **Leonardo Gaspar Saheb - RM553383**
+
 ## Funcionalidades
 
 - Cadastro, atualização, remoção e consulta de **Usuários**
@@ -101,4 +107,4 @@ Consulte o Swagger para todos os endpoints e exemplos.
 
 ## Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+- Este projeto é de uso acadêmico - FIAP.
