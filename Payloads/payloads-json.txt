@@ -1,0 +1,109 @@
+## 1. POST (criação)
+
+### Usuário
+
+{
+  "nome": "João da Silva",
+  "email": "joao.silva@email.com",
+  "senhaHash": "hashseguro123",
+  "nivelAcesso": "admin",
+  "status": "ativo"
+}
+
+### Área de Risco
+
+{
+  "nomeArea": "Zona Norte",
+  "descricao": "Área industrial com risco de incêndio",
+  "latitude": -23.5505,
+  "longitude": -46.6333,
+  "status": "ativo",
+  "raioCobertura": 2.5
+}
+
+### Drone
+
+{
+  "nome": "Drone Alpha",
+  "modelo": "DJI Mavic 2",
+  "status": "ativo",
+  "latitude": -23.5505,
+  "longitude": -46.6333,
+  "bateria": 90,
+  "capacidadeCarga": 1.5,
+  "dataUltimaManutencao": "2025-06-01T10:00:00",
+  "horarioOperacao": "08:00-18:00"
+}
+
+### Alerta
+
+{
+  "tipoAlerta": "Incêndio",
+  "status": "pendente",
+  "idArea": 1,
+  "idDrone": 1,
+  "idUsuario": 1,
+  "gravidade": "alto",
+  "descricao": "Fumaça detectada na área industrial"
+}
+
+## 2. PUT (atualização)
+
+### Usuário
+
+{
+  "idUsuario": 1,
+  "nome": "João da Silva Atualizado",
+  "email": "joao.silva@email.com",
+  "senhaHash": "novohashseguro456",
+  "nivelAcesso": "admin",
+  "status": "ativo",
+  "dataCriacao": "2025-06-08T12:00:00",
+  "dataAtualizacao": "2025-06-09T08:00:00"
+}
+
+### Área de Risco
+
+{
+  "idArea": 1,
+  "nomeArea": "Zona Norte Atualizada",
+  "descricao": "Atualização da descrição",
+  "latitude": -23.5505,
+  "longitude": -46.6333,
+  "status": "ativo",
+  "raioCobertura": 3.0,
+  "dataCadastro": "2025-06-08T12:00:00"
+}
+```
+
+
+### Drone
+
+{
+  "idDrone": 1,
+  "nome": "Drone Alpha Atualizado",
+  "modelo": "DJI Mavic 2 Pro",
+  "status": "manutencao",
+  "latitude": -23.5505,
+  "longitude": -46.6333,
+  "bateria": 75,
+  "capacidadeCarga": 1.8,
+  "dataUltimaManutencao": "2025-06-10T09:00:00",
+  "horarioOperacao": "09:00-19:00",
+  "dataCadastro": "2025-06-08T12:00:00"
+}
+
+
+### Alerta
+
+{
+  "idAlerta": 1,
+  "tipoAlerta": "Incêndio Atualizado",
+  "dataHora": "2025-06-09T08:30:00",
+  "status": "resolvido",
+  "idArea": 1,
+  "idDrone": 1,
+  "idUsuario": 1,
+  "gravidade": "alto",
+  "descricao": "Situação resolvida"
+}
