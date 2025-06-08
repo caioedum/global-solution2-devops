@@ -1,6 +1,6 @@
 # iHelperDrone Web API
 
-Web API RESTful desenvolvida em .NET para gerenciamento de drones, áreas de risco, alertas e usuários em operações de monitoramento inteligente. O backend utiliza Azure SQL Database e está pronto para deploy no Azure App Service.
+Web API RESTful desenvolvida em .NET para gerenciamento de drones, áreas de risco, alertas e usuários em operações de monitoramento inteligente. O backend utiliza Azure SQL Database e foi deployado no Azure App Service.
 
 ---
 
