@@ -7,6 +7,8 @@ using WebApiHelperDrone.Context;
 
 namespace WebApiHelperDrone.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class AreasRiscoController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
